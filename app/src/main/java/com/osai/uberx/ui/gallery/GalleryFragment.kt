@@ -1,5 +1,6 @@
 package com.osai.uberx.ui.gallery
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity.RESULT_OK
 import android.content.Context
@@ -11,13 +12,12 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
-import android.widget.TextView
+import android.widget.EditText
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.osai.uberx.R
 import com.osai.uberx.UberXApp
@@ -27,6 +27,7 @@ import kotlinx.android.synthetic.main.fragment_gallery.*
 import java.io.File
 import javax.inject.Inject
 
+
 class GalleryFragment : Fragment() {
 
     companion object {
@@ -35,8 +36,13 @@ class GalleryFragment : Fragment() {
         private const val PICK_IMAGE_REQUEST = 20
     }
 
-    @Inject lateinit var cameraUtils: CameraUtils
-    @Inject lateinit var viewModelFactory: ViewModelFactory
+    @Inject
+    lateinit var cameraUtils: CameraUtils
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private var name: String? = null
 
     // Obtain the ViewModel - use the activity as the lifecycle owner
     private val galleryViewModel: GalleryViewModel by activityViewModels { viewModelFactory }
@@ -53,23 +59,33 @@ class GalleryFragment : Fragment() {
     ): View? {
         val root = inflater.inflate(R.layout.fragment_gallery, container, false)
 
-        galleryViewModel.text.observe(viewLifecycleOwner, Observer {
-            text_name.text = it
-        })
+        val profile_name = root.findViewById<EditText>(R.id.profile_name)
+        profile_name.setOnEditorActionListener { v, actionId, event ->
+            val handled = false
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                text_name.text = profile_name.text.toString()
+                profile_name.setText("")
+                profile_name.requestFocus()
+            }
+            handled
+        }
 
         val openCamera = root.findViewById<Button>(R.id.openCamera)
-        val openGallery = root.findViewById<Button>(R.id.openGallery)
         openCamera.setOnClickListener { openCamera() }
+        val openGallery = root.findViewById<Button>(R.id.openGallery)
         openGallery.setOnClickListener { openGallery() }
 
         return root
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     private fun openCamera() {
         val pictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (pictureIntent.resolveActivity(requireContext().packageManager) != null) {
             val file: File = cameraUtils.createImageFile()
+
             galleryViewModel.photoPath = file.absolutePath
+
             galleryViewModel.photoPathUri = FileProvider.getUriForFile(
                 requireContext(),
                 requireContext().packageName + ".provider",
@@ -95,27 +111,23 @@ class GalleryFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
             when (requestCode) {
-
                 REQUEST_CAPTURE_IMAGE -> {
-                    showSelectedImage(galleryViewModel.photoPathUri)
+                    galleryViewModel.photoPathUri?.let { displaySelectedImage(it) }
                 }
-
                 PICK_IMAGE_REQUEST -> {
                     data?.data?.let { uri ->
-                        galleryViewModel.photoPath =
-                            cameraUtils.getImagePathFromInputStreamUri(uri)
-                        showSelectedImage(uri)
+                        galleryViewModel.photoPath = cameraUtils.getImagePathFromInputStreamUri(uri)
+                        displaySelectedImage(uri)
                     }
                 }
             }
         }
     }
 
-    private fun showSelectedImage(photoPathUri: Uri?) {
+    private fun displaySelectedImage(photoPathUri: Uri) {
         Glide
             .with(this@GalleryFragment)
             .load(photoPathUri.toString())
             .into(imageView);
     }
-
 }

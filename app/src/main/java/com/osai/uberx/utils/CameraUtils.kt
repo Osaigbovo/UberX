@@ -19,10 +19,6 @@ class CameraUtils @Inject constructor(private val context: Context) {
         return File.createTempFile(imageFileName, ".jpg", storageDir)
     }
 
-    /**
-     * Using this for Google photos
-     * https://stackoverflow.com/questions/43500164/getting-path-from-uri-from-google-photos-app
-     */
     fun getImagePathFromInputStreamUri(uri: Uri): String? {
         return if (uri.authority != null) {
             try {

@@ -2,6 +2,7 @@ package com.osai.uberx.ui
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender.SendIntentException
 import android.content.pm.PackageManager
@@ -16,19 +17,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
+import com.osai.uberx.UberXApp
+import com.osai.uberx.ui.home.HomeViewModel
+import com.osai.uberx.utils.CoroutinesDispatcherProvider
 import com.osai.uberx.utils.PermissionUtils.PermissionDeniedDialog.Companion.newInstance
 import com.osai.uberx.utils.PermissionUtils.isPermissionGranted
 import com.osai.uberx.utils.PermissionUtils.requestPermission
+import com.osai.uberx.utils.ViewModelFactory
+import com.osai.uberx.utils.getCarBitmap
+import javax.inject.Inject
 
 open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener,
     GoogleMap.OnMyLocationClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
@@ -39,12 +44,27 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
         private const val REQUEST_LOCATION = 199
     }
 
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    @Inject
+    lateinit var dispatcherProvider: CoroutinesDispatcherProvider
+
+    // Obtain the ViewModel - use the activity as the lifecycle owner
+    private val homeViewModel: HomeViewModel by activityViewModels { viewModelFactory }
+
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
     private lateinit var googleMap: GoogleMap
-    private var userLocation: Location? = null
+    private lateinit var userLocation: Location
     private var permissionDenied = false
+    private val nearbyCabMarkerList = arrayListOf<Marker>()
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        UberXApp.appComponent(requireActivity()).inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,6 +91,24 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
                         .build()
                     addMarker(LatLng(userLocation!!.latitude, userLocation!!.longitude))
                     googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+                    homeViewModel.getCompleteAddressString(
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                    showNearbyCabs(
+                        listOf(
+                            LatLng(
+                                userLocation.latitude + 0.001,
+                                userLocation.longitude + 0.001
+                            ), LatLng(
+                                userLocation.latitude + 0.0013,
+                                userLocation.longitude + 0.0012
+                            ), LatLng(
+                                userLocation.latitude + 0.0011,
+                                userLocation.longitude - 0.0016
+                            )
+                        )
+                    )
                 }
             }
         }
@@ -80,6 +118,31 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
         enableMyLocation()
+
+        googleMap.setOnMapClickListener { latlng ->
+            // Clears the previously touched position
+            googleMap.clear()
+            // Animating to the touched position
+            googleMap.animateCamera(CameraUpdateFactory.newLatLng(latlng))
+
+            val location = LatLng(latlng.latitude, latlng.longitude)
+            showNearbyCabs(listOf(location))
+            googleMap.addMarker(MarkerOptions().position(location))
+            showNearbyCabs(
+                listOf(
+                    LatLng(
+                        userLocation.latitude - 0.02,
+                        userLocation.longitude + 0.02
+                    ), LatLng(
+                        userLocation.latitude - 0.03,
+                        userLocation.longitude - 0.02
+                    ), LatLng(
+                        userLocation.latitude + 0.01,
+                        userLocation.longitude - 0.01
+                    )
+                )
+            )
+        }
     }
 
     override fun onResume() {
@@ -123,7 +186,7 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
 
     private fun createLocationRequest() {
 
-        val builder = locationRequest?.let {
+        val builder = locationRequest.let {
             LocationSettingsRequest.Builder()
                 .addLocationRequest(it)
         }
@@ -138,12 +201,31 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
                     for (location in locationResult.locations) {
                         userLocation = location
                         val cameraPosition = CameraPosition.Builder()
-                            .target(LatLng(userLocation!!.latitude, userLocation!!.longitude))
+                            .target(LatLng(userLocation.latitude, userLocation.longitude))
                             .zoom(17f)
                             .build()
 
-                        addMarker(LatLng(userLocation!!.latitude, userLocation!!.longitude))
+                        addMarker(LatLng(userLocation.latitude, userLocation.longitude))
                         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+
+                        homeViewModel.getCompleteAddressString(
+                            latitude = location.latitude,
+                            longitude = location.longitude
+                        )
+                        showNearbyCabs(
+                            listOf(
+                                LatLng(
+                                    userLocation.latitude - 0.01,
+                                    userLocation.longitude - 0.01
+                                ), LatLng(
+                                    userLocation.latitude - 0.03,
+                                    userLocation.longitude - 0.02
+                                ), LatLng(
+                                    userLocation.latitude - 0.02,
+                                    userLocation.longitude - 0.01
+                                )
+                            )
+                        )
                     }
                 }
             }
@@ -167,10 +249,6 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
         }
     }
 
-    open fun getUserLocation() : Location?{
-        return userLocation
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_LOCATION) {
@@ -180,7 +258,6 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
                     enableMyLocation()
                 }
                 Activity.RESULT_CANCELED -> {
-
                 }
             }
         }
@@ -196,9 +273,9 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
         ) {
             createLocationRequest()
         } else {
-            googleMap.isMyLocationEnabled = false;
-            googleMap.uiSettings.isMyLocationButtonEnabled = false;
-            userLocation = null
+            googleMap.isMyLocationEnabled = false
+            googleMap.uiSettings.isMyLocationButtonEnabled = false
+            //userLocation = null
             requestPermission(
                 requireActivity() as AppCompatActivity,
                 LOCATION_PERMISSION_REQUEST_CODE,
@@ -245,4 +322,21 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
     private fun showMissingPermissionError() {
         newInstance(true).show(childFragmentManager, "dialog")
     }
+
+    fun showNearbyCabs(latLngList: List<LatLng>) {
+        nearbyCabMarkerList.clear()
+        for (latLng in latLngList) {
+            val nearbyCabMarker = addCarMarkerAndGet(latLng)
+            nearbyCabMarkerList.add(nearbyCabMarker)
+        }
+    }
+
+    private fun addCarMarkerAndGet(latLng: LatLng): Marker {
+        val bitmapDescriptor = BitmapDescriptorFactory
+            .fromBitmap(getCarBitmap(requireActivity()))
+        return googleMap.addMarker(
+            MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor)
+        )
+    }
+
 }

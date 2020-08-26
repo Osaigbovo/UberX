@@ -2,12 +2,15 @@ package com.osai.uberx.utils
 
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.view.animation.LinearInterpolator
 import com.google.android.gms.maps.model.GroundOverlay
+import com.osai.uberx.R
 
 fun GroundOverlay.startOverlayAnimation() {
     val animatorSet = AnimatorSet()
@@ -53,4 +56,9 @@ fun Drawable.drawableToBitmap(): Bitmap? {
     setBounds(0, 0, canvas.getWidth(), canvas.getHeight())
     draw(canvas)
     return bitmap
+}
+
+fun getCarBitmap(context: Context): Bitmap {
+    val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ic_car)
+    return Bitmap.createScaledBitmap(bitmap, 50, 100, false)
 }

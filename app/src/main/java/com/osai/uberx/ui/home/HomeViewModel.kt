@@ -1,13 +1,70 @@
 package com.osai.uberx.ui.home
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
+import androidx.lifecycle.*
+import com.osai.uberx.data.Result.*
+import com.osai.uberx.domain.NameUseCase
+import com.osai.uberx.utils.CoroutinesDispatcherProvider
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
+import javax.inject.Inject
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val context: Context,
+    private val nameUseCase: NameUseCase,
+    private val dispatcherProvider: CoroutinesDispatcherProvider
+) : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+    var addressName: MutableLiveData<String> = MutableLiveData()
+
+    private val _state = MutableLiveData<String>()
+    val state: LiveData<String> get() = _state
+
+    init {
+        getName()
     }
-    val text: LiveData<String> = _text
+
+    private fun getName(): Job {
+        return viewModelScope.launch(dispatcherProvider.io) {
+            when (val result = nameUseCase()) {
+                is Success -> withContext(dispatcherProvider.main) {
+                    _state.value = result.data
+                }
+            }
+        }
+    }
+
+    fun getCompleteAddressString(latitude: Double, longitude: Double) {
+        var strAdd = ""
+        viewModelScope.launch(dispatcherProvider.io) {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            try {
+                val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+                if (addresses != null) {
+                    val returnedAddress: Address = addresses[0]
+                    val strReturnedAddress = StringBuilder("")
+
+                    for (i in 0..returnedAddress.getMaxAddressLineIndex()) {
+                        strReturnedAddress.append(returnedAddress.getAddressLine(i))
+                            .append("\n")
+                    }
+                    withContext(dispatcherProvider.main) {
+                        strAdd = strReturnedAddress.toString().trim()
+                        addressName.value = strAdd
+                    }
+                } else {
+                    withContext(dispatcherProvider.main) {
+                        addressName.value = "Can't Find Address"
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+        }
+    }
 }

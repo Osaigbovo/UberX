@@ -1,37 +1,47 @@
 package com.osai.uberx.ui.home
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat.getDrawable
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.osai.uberx.R
+import com.osai.uberx.UberXApp
 import com.osai.uberx.ui.BaseFragment
-import com.osai.uberx.utils.PermissionUtils.isPermissionGranted
-import com.osai.uberx.utils.PermissionUtils.requestPermission
+import com.osai.uberx.ui.gallery.GalleryViewModel
+import com.osai.uberx.utils.ViewModelFactory
 import com.osai.uberx.utils.drawableToBitmap
 import com.osai.uberx.utils.startOverlayAnimation
+import java.util.*
+import javax.inject.Inject
+
 
 class HomeFragment : BaseFragment() {
 
-    private lateinit var homeViewModel: HomeViewModel
+    private lateinit var yourAddress: AppCompatTextView
+    private lateinit var yourName: TextView
+
+    // Obtain the ViewModel - use the activity as the lifecycle owner
+    private val homeViewModel: HomeViewModel by activityViewModels { viewModelFactory }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        UberXApp.appComponent(requireActivity()).inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,14 +49,12 @@ class HomeFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        homeViewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_home, container, false)
-        homeViewModel.text.observe(viewLifecycleOwner, Observer {
-//            textView.text = it
-        })
-
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment = childFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        yourAddress = root.findViewById(R.id.yourAddressTextView)
+        yourName = root.findViewById(R.id.yourNameTextView)
 
         return root
     }
@@ -61,10 +69,11 @@ class HomeFragment : BaseFragment() {
             setOnMyLocationButtonClickListener(this@HomeFragment)
             setOnMyLocationClickListener(this@HomeFragment)
             setMaxZoomPreference(20F)
-            //setMapStyle(style)
+            setMapStyle(style)
         }
 
-        //addOverlay(LatLng(getUserLocation()?.latitude!!, getUserLocation()?.longitude!!), googleMap)
+        homeViewModel.addressName.observe(viewLifecycleOwner, { yourAddress.text = it })
+        homeViewModel.state.observe(viewLifecycleOwner, { yourName.text = it })
     }
 
     private fun addOverlay(place: LatLng?, googleMap: GoogleMap) {
@@ -75,9 +84,16 @@ class HomeFragment : BaseFragment() {
                 .zIndex(3f)
                 .image(
                     BitmapDescriptorFactory
-                        .fromBitmap(getDrawable(requireActivity(), R.drawable.map_overlay)!!.drawableToBitmap())
+                        .fromBitmap(
+                            getDrawable(
+                                requireActivity(),
+                                R.drawable.map_overlay
+                            )!!.drawableToBitmap()
+                        )
                 )
         )
         groundOverlay.startOverlayAnimation()
     }
+
+
 }

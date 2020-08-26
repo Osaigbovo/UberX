@@ -19,5 +19,10 @@
     <string name="enter_name">Type your name and press Enter</string>
     <string name="open_camera">Open Camera</string>
     <string name="open_gallery">Open Gallery</string>
+    <string name="username">userName</string>
+    <string name="userimage">userImage</string>
+    <string name="userSharedPref">User</string>
+    <string name="your_address">Your Address</string>
+    <string name="your_name">Your Name</string>
 
 </resources>

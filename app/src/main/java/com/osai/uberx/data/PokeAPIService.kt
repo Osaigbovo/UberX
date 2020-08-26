@@ -1,9 +1,4 @@
-package co.metalab.tech.interview.data
-
-import androidx.annotation.ColorRes
-import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Path
+package com.osai.uberx.data
 
 interface PokeAPIService {
 

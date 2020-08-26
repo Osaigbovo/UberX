@@ -11,11 +11,14 @@ class NameRepositoryImpl @Inject constructor() :
     override suspend fun getName(): Result<String> {
         return try {
             val response = Response.success("Osaigbovo")
-            getResult(response = response, onError = {
-                Result.Error(
-                    IOException("Error getting name ${response.code()} ${response.message()}")
-                )
-            })
+            getResult(
+                response = response,
+                onError = {
+                    Result.Error(
+                        IOException("Error getting name ${response.code()} ${response.message()}")
+                    )
+                }
+            )
         } catch (e: Exception) {
             Result.Error(IOException("Error getting name", e))
         }

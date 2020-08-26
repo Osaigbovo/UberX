@@ -26,7 +26,8 @@ class AppModule(private val application: Application) {
     @Singleton
     @Provides
     fun providesSharedPreferences(context: Context): SharedPreferences {
-        return context.getSharedPreferences(context.getString(R.string.userSharedPref),
+        return context.getSharedPreferences(
+            context.getString(R.string.userSharedPref),
             Context.MODE_PRIVATE
         )
     }
@@ -35,5 +36,4 @@ class AppModule(private val application: Application) {
     @Provides
     fun provideNameRepository(): NameRepository =
         NameRepositoryImpl()
-
 }

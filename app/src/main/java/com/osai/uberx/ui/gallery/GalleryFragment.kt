@@ -22,21 +22,18 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
-import com.google.android.material.navigation.NavigationView
 import com.osai.uberx.R
 import com.osai.uberx.UberXApp
 import com.osai.uberx.utils.CameraUtils
 import com.osai.uberx.utils.ViewModelFactory
 import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.android.synthetic.main.fragment_gallery.*
 import java.io.File
 import javax.inject.Inject
-
 
 class GalleryFragment : Fragment() {
 
     companion object {
-        //Request code for location permission request.
+        // Request code for location permission request.
         private const val REQUEST_CAPTURE_IMAGE = 10
         private const val PICK_IMAGE_REQUEST = 20
     }

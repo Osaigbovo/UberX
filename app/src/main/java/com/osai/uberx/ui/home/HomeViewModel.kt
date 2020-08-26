@@ -48,7 +48,7 @@ class HomeViewModel @Inject constructor(
                     val returnedAddress: Address = addresses[0]
                     val strReturnedAddress = StringBuilder("")
 
-                    for (i in 0..returnedAddress.getMaxAddressLineIndex()) {
+                    for (i in 0..returnedAddress.maxAddressLineIndex) {
                         strReturnedAddress.append(returnedAddress.getAddressLine(i))
                             .append("\n")
                     }
@@ -64,7 +64,6 @@ class HomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
         }
     }
 }

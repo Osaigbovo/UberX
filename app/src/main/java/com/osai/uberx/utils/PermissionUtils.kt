@@ -23,8 +23,10 @@ object PermissionUtils {
      */
     @JvmStatic
     fun requestPermission(
-        activity: AppCompatActivity, requestId: Int,
-        permission: String, finishActivity: Boolean
+        activity: AppCompatActivity,
+        requestId: Int,
+        permission: String,
+        finishActivity: Boolean
     ) {
         if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
             // Display a dialog with rationale.
@@ -48,7 +50,8 @@ object PermissionUtils {
      */
     @JvmStatic
     fun isPermissionGranted(
-        grantPermissions: Array<String>, grantResults: IntArray,
+        grantPermissions: Array<String>,
+        grantResults: IntArray,
         permission: String
     ): Boolean {
         for (i in grantPermissions.indices) {
@@ -174,5 +177,4 @@ object PermissionUtils {
             }
         }
     }
-
 }

@@ -2,8 +2,6 @@ package com.osai.uberx.ui.gallery
 
 import android.content.SharedPreferences
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import javax.inject.Inject
 
@@ -26,6 +24,4 @@ class GalleryViewModel @Inject constructor(private val sharedPreferences: Shared
             apply()
         }
     }
-
-
 }

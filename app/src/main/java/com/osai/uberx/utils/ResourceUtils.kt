@@ -53,7 +53,7 @@ fun Drawable.drawableToBitmap(): Bitmap? {
         )
     }
     val canvas = Canvas(bitmap)
-    setBounds(0, 0, canvas.getWidth(), canvas.getHeight())
+    setBounds(0, 0, canvas.width, canvas.height)
     draw(canvas)
     return bitmap
 }

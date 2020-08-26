@@ -35,11 +35,15 @@ import com.osai.uberx.utils.ViewModelFactory
 import com.osai.uberx.utils.getCarBitmap
 import javax.inject.Inject
 
-open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener,
-    GoogleMap.OnMyLocationClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
+open class BaseFragment :
+    Fragment(),
+    OnMapReadyCallback,
+    GoogleMap.OnMyLocationButtonClickListener,
+    GoogleMap.OnMyLocationClickListener,
+    ActivityCompat.OnRequestPermissionsResultCallback {
 
     companion object {
-        //Request code for location permission request.
+        // Request code for location permission request.
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
         private const val REQUEST_LOCATION = 199
     }
@@ -86,10 +90,10 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
                 for (location in locationResult.locations) {
                     userLocation = location
                     val cameraPosition = CameraPosition.Builder()
-                        .target(LatLng(userLocation!!.latitude, userLocation!!.longitude))
+                        .target(LatLng(userLocation.latitude, userLocation.longitude))
                         .zoom(17f)
                         .build()
-                    addMarker(LatLng(userLocation!!.latitude, userLocation!!.longitude))
+                    addMarker(LatLng(userLocation.latitude, userLocation.longitude))
                     googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
                     homeViewModel.getCompleteAddressString(
                         latitude = location.latitude,
@@ -100,10 +104,12 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
                             LatLng(
                                 userLocation.latitude + 0.001,
                                 userLocation.longitude + 0.001
-                            ), LatLng(
+                            ),
+                            LatLng(
                                 userLocation.latitude + 0.0013,
                                 userLocation.longitude + 0.0012
-                            ), LatLng(
+                            ),
+                            LatLng(
                                 userLocation.latitude + 0.0011,
                                 userLocation.longitude - 0.0016
                             )
@@ -133,10 +139,12 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
                     LatLng(
                         userLocation.latitude - 0.02,
                         userLocation.longitude + 0.02
-                    ), LatLng(
+                    ),
+                    LatLng(
                         userLocation.latitude - 0.03,
                         userLocation.longitude - 0.02
-                    ), LatLng(
+                    ),
+                    LatLng(
                         userLocation.latitude + 0.01,
                         userLocation.longitude - 0.01
                     )
@@ -217,10 +225,12 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
                                 LatLng(
                                     userLocation.latitude - 0.01,
                                     userLocation.longitude - 0.01
-                                ), LatLng(
+                                ),
+                                LatLng(
                                     userLocation.latitude - 0.03,
                                     userLocation.longitude - 0.02
-                                ), LatLng(
+                                ),
+                                LatLng(
                                     userLocation.latitude - 0.02,
                                     userLocation.longitude - 0.01
                                 )
@@ -237,7 +247,7 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
                 try {
                     // Show the dialog by calling startResolutionForResult(),
                     // and check the result in onActivityResult().
-                    val resolvable = e as ResolvableApiException
+                    val resolvable = e
                     resolvable.startResolutionForResult(
                         activity,
                         REQUEST_LOCATION
@@ -254,7 +264,7 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
         if (requestCode == REQUEST_LOCATION) {
             when (resultCode) {
                 Activity.RESULT_OK -> {
-                    //Success Perform Task Here
+                    // Success Perform Task Here
                     enableMyLocation()
                 }
                 Activity.RESULT_CANCELED -> {
@@ -275,7 +285,7 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
         } else {
             googleMap.isMyLocationEnabled = false
             googleMap.uiSettings.isMyLocationButtonEnabled = false
-            //userLocation = null
+            // userLocation = null
             requestPermission(
                 requireActivity() as AppCompatActivity,
                 LOCATION_PERMISSION_REQUEST_CODE,
@@ -318,7 +328,7 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
         }
     }
 
-    //Displays a dialog with error message explaining that the location permission is missing.
+    // Displays a dialog with error message explaining that the location permission is missing.
     private fun showMissingPermissionError() {
         newInstance(true).show(childFragmentManager, "dialog")
     }
@@ -327,16 +337,15 @@ open class BaseFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocation
         nearbyCabMarkerList.clear()
         for (latLng in latLngList) {
             val nearbyCabMarker = addCarMarkerAndGet(latLng)
-            nearbyCabMarkerList.add(nearbyCabMarker)
+            nearbyCabMarker?.let { nearbyCabMarkerList.add(it) }
         }
     }
 
-    private fun addCarMarkerAndGet(latLng: LatLng): Marker {
+    private fun addCarMarkerAndGet(latLng: LatLng): Marker? {
         val bitmapDescriptor = BitmapDescriptorFactory
-            .fromBitmap(getCarBitmap(requireActivity()))
+            .fromBitmap(getCarBitmap(requireContext()))
         return googleMap.addMarker(
             MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor)
         )
     }
-
 }

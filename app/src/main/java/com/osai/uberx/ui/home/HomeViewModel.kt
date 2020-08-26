@@ -4,9 +4,14 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import androidx.lifecycle.*
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.osai.uberx.data.Result.*
 import com.osai.uberx.domain.NameUseCase
 import com.osai.uberx.utils.CoroutinesDispatcherProvider
+import com.osai.uberx.utils.getCarBitmap
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -65,5 +70,12 @@ class HomeViewModel @Inject constructor(
                 e.printStackTrace()
             }
         }
+    }
+
+    fun addCarMarkerAndGet(latLng: LatLng): MarkerOptions? {
+        val bitmapDescriptor = BitmapDescriptorFactory
+            .fromBitmap(getCarBitmap(context))
+        return MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor)
+
     }
 }

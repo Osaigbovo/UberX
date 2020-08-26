@@ -2,7 +2,7 @@ package com.osai.uberx.dagger
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.osai.uberx.ui.gallery.GalleryViewModel
+import com.osai.uberx.ui.profile.ProfileViewModel
 import com.osai.uberx.ui.home.HomeViewModel
 import com.osai.uberx.utils.ViewModelFactory
 import com.osai.uberx.utils.ViewModelKey
@@ -20,8 +20,8 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(GalleryViewModel::class)
-    abstract fun bindGalleryViewModel(galleryViewModel: GalleryViewModel): ViewModel
+    @ViewModelKey(ProfileViewModel::class)
+    abstract fun bindGalleryViewModel(profileViewModel: ProfileViewModel): ViewModel
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

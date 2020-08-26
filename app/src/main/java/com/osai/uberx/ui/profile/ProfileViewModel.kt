@@ -1,11 +1,11 @@
-package com.osai.uberx.ui.gallery
+package com.osai.uberx.ui.profile
 
 import android.content.SharedPreferences
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import javax.inject.Inject
 
-class GalleryViewModel @Inject constructor(private val sharedPreferences: SharedPreferences) :
+class ProfileViewModel @Inject constructor(private val sharedPreferences: SharedPreferences) :
     ViewModel() {
 
     var photoPath: String? = null

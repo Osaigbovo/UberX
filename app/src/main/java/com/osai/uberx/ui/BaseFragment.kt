@@ -342,10 +342,6 @@ open class BaseFragment :
     }
 
     private fun addCarMarkerAndGet(latLng: LatLng): Marker? {
-        val bitmapDescriptor = BitmapDescriptorFactory
-            .fromBitmap(getCarBitmap(requireContext()))
-        return googleMap.addMarker(
-            MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor)
-        )
+        return googleMap.addMarker(homeViewModel.addCarMarkerAndGet(latLng))
     }
 }

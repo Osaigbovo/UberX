@@ -1,4 +1,4 @@
-package com.osai.uberx.ui.gallery
+package com.osai.uberx.ui.profile
 
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
@@ -30,7 +30,7 @@ import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import javax.inject.Inject
 
-class GalleryFragment : Fragment() {
+class ProfileFragment : Fragment() {
 
     companion object {
         // Request code for location permission request.
@@ -49,7 +49,7 @@ class GalleryFragment : Fragment() {
     private lateinit var imageView: ImageView
 
     // Obtain the ViewModel - use the activity as the lifecycle owner
-    private val galleryViewModel: GalleryViewModel by activityViewModels { viewModelFactory }
+    private val profileViewModel: ProfileViewModel by activityViewModels { viewModelFactory }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -61,7 +61,7 @@ class GalleryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_gallery, container, false)
+        val root = inflater.inflate(R.layout.fragment_profile, container, false)
 
         imageView = root.findViewById<CircleImageView>(R.id.imageView)
         val profile_name = root.findViewById<EditText>(R.id.profile_name)
@@ -82,7 +82,7 @@ class GalleryFragment : Fragment() {
             val handled = false
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 text_name.text = profile_name.text.toString()
-                galleryViewModel.saveUserName(profile_name.text.toString())
+                profileViewModel.saveUserName(profile_name.text.toString())
                 profile_name.setText("")
                 profile_name.requestFocus()
             }
@@ -96,13 +96,13 @@ class GalleryFragment : Fragment() {
         val pictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (pictureIntent.resolveActivity(requireContext().packageManager) != null) {
             val file: File = cameraUtils.createImageFile()
-            galleryViewModel.photoPath = file.absolutePath
-            galleryViewModel.photoPathUri = FileProvider.getUriForFile(
+            profileViewModel.photoPath = file.absolutePath
+            profileViewModel.photoPathUri = FileProvider.getUriForFile(
                 requireContext(),
                 requireContext().packageName + ".provider",
                 file
             )
-            pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, galleryViewModel.photoPathUri)
+            pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, profileViewModel.photoPathUri)
             startActivityForResult(pictureIntent, REQUEST_CAPTURE_IMAGE)
         }
     }
@@ -123,16 +123,16 @@ class GalleryFragment : Fragment() {
         if (resultCode == RESULT_OK) {
             when (requestCode) {
                 REQUEST_CAPTURE_IMAGE -> {
-                    galleryViewModel.photoPathUri?.let {
+                    profileViewModel.photoPathUri?.let {
                         displaySelectedImage(it)
-                        galleryViewModel.saveUserImage(it)
+                        profileViewModel.saveUserImage(it)
                     }
                 }
                 PICK_IMAGE_REQUEST -> {
                     data?.data?.let { uri ->
-                        galleryViewModel.photoPath = cameraUtils.getImagePathFromInputStreamUri(uri)
+                        profileViewModel.photoPath = cameraUtils.getImagePathFromInputStreamUri(uri)
                         displaySelectedImage(uri)
-                        galleryViewModel.saveUserImage(uri)
+                        profileViewModel.saveUserImage(uri)
                     }
                 }
             }
@@ -141,7 +141,7 @@ class GalleryFragment : Fragment() {
 
     private fun displaySelectedImage(photoPathUri: Uri) {
         Glide
-            .with(this@GalleryFragment)
+            .with(this@ProfileFragment)
             .load(photoPathUri.toString())
             .into(imageView)
     }

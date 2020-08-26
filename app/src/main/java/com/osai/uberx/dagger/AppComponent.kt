@@ -3,7 +3,7 @@ package com.osai.uberx.dagger
 import android.app.Application
 import com.osai.uberx.MainActivity
 import com.osai.uberx.ui.BaseFragment
-import com.osai.uberx.ui.gallery.GalleryFragment
+import com.osai.uberx.ui.profile.ProfileFragment
 import com.osai.uberx.ui.home.HomeFragment
 import dagger.Component
 import javax.inject.Singleton
@@ -23,7 +23,7 @@ interface AppComponent {
     fun inject(mainActivity: MainActivity)
     fun inject(homeFragment: HomeFragment)
     fun inject(baseFragment: BaseFragment)
-    fun inject(galleryFragment: GalleryFragment)
+    fun inject(profileFragment: ProfileFragment)
 
     fun inject(application: Application)
 }
